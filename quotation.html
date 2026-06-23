@@ -8,9 +8,7 @@
   </header>
 
   <div class="form-wrap">
-    @if (error()) {
-      <div class="alert-error">⚠️ {{ error() }}</div>
-    }
+    @if (error()) { <div class="alert-error">⚠️ {{ error() }}</div> }
 
     <div class="form-grid">
 
@@ -55,62 +53,29 @@
           </div>
         </div>
         <div class="field-row">
-          <div class="field">
-            <label>Tax %</label>
-            <input type="number" [(ngModel)]="form.tax_pct" />
-          </div>
-          <div class="field">
-            <label>Discount %</label>
-            <input type="number" [(ngModel)]="form.discount_pct" />
-          </div>
+          <div class="field"><label>Tax %</label><input type="number" [(ngModel)]="form.tax_pct" /></div>
+          <div class="field"><label>Discount %</label><input type="number" [(ngModel)]="form.discount_pct" /></div>
         </div>
       </div>
 
       <!-- CLIENT -->
       <div class="section-card">
         <h2>👤 Client Details</h2>
-        <div class="field">
-          <label>Client Name *</label>
-          <input type="text" [(ngModel)]="form.client_name" placeholder="Client Name" />
-        </div>
-        <div class="field">
-          <label>Client Email</label>
-          <input type="email" [(ngModel)]="form.client_email" />
-        </div>
-        <div class="field">
-          <label>Client Phone</label>
-          <input type="tel" [(ngModel)]="form.client_phone" />
-        </div>
-        <div class="field">
-          <label>Client Address</label>
-          <textarea [(ngModel)]="form.client_address" rows="2"></textarea>
-        </div>
-        <div class="field">
-          <label>Project Name *</label>
-          <input type="text" [(ngModel)]="form.project_name" placeholder="Website Redesign" />
-        </div>
-        <div class="field">
-          <label>Project Description</label>
-          <textarea [(ngModel)]="form.project_description" rows="2"></textarea>
-        </div>
-        <div class="field">
-          <label>Valid Until</label>
-          <input type="date" [(ngModel)]="form.valid_until" />
-        </div>
+        <div class="field"><label>Client Name *</label><input type="text" [(ngModel)]="form.client_name" placeholder="Client Name" /></div>
+        <div class="field"><label>Client Email</label><input type="email" [(ngModel)]="form.client_email" /></div>
+        <div class="field"><label>Client Phone</label><input type="tel" [(ngModel)]="form.client_phone" /></div>
+        <div class="field"><label>Client Address</label><textarea [(ngModel)]="form.client_address" rows="2"></textarea></div>
+        <div class="field"><label>Project Name *</label><input type="text" [(ngModel)]="form.project_name" placeholder="Website Redesign" /></div>
+        <div class="field"><label>Project Description</label><textarea [(ngModel)]="form.project_description" rows="2"></textarea></div>
+        <div class="field"><label>Valid Until</label><input type="date" [(ngModel)]="form.valid_until" /></div>
       </div>
 
       <!-- QUOTATION META -->
       <div class="section-card">
         <h2>🔢 Quotation Details</h2>
         <div class="field-row">
-          <div class="field">
-            <label>Quotation Number</label>
-            <input type="text" [(ngModel)]="form.quotation_number" placeholder="QT-2025-001" />
-          </div>
-          <div class="field">
-            <label>Quotation Date</label>
-            <input type="date" [(ngModel)]="form.quotation_date" />
-          </div>
+          <div class="field"><label>Quotation Number</label><input type="text" [(ngModel)]="form.quotation_number" placeholder="QT-2025-001" /></div>
+          <div class="field"><label>Quotation Date</label><input type="date" [(ngModel)]="form.quotation_date" /></div>
         </div>
         <div class="field">
           <label>Payment Terms</label>
@@ -127,18 +92,9 @@
       <!-- NOTES -->
       <div class="section-card">
         <h2>📝 Notes & Terms</h2>
-        <div class="field">
-          <label>Additional Notes</label>
-          <textarea [(ngModel)]="form.notes" rows="3"></textarea>
-        </div>
-        <div class="field">
-          <label>Terms & Conditions</label>
-          <textarea [(ngModel)]="form.terms" rows="2"></textarea>
-        </div>
-        <div class="field">
-          <label>Bank Details</label>
-          <textarea [(ngModel)]="form.bank_details" rows="2"></textarea>
-        </div>
+        <div class="field"><label>Additional Notes</label><textarea [(ngModel)]="form.notes" rows="3"></textarea></div>
+        <div class="field"><label>Terms & Conditions</label><textarea [(ngModel)]="form.terms" rows="2"></textarea></div>
+        <div class="field"><label>Bank Details</label><textarea [(ngModel)]="form.bank_details" rows="2"></textarea></div>
       </div>
 
     </div>
@@ -158,16 +114,19 @@
   <header class="topbar no-print">
     <button class="back-btn" (click)="goBack()">← Edit</button>
     <h1>Quotation Preview</h1>
-    <button class="print-btn" (click)="printQuotation()">🖨 Print / PDF</button>
+    <div class="header-actions">
+      <button class="download-btn" (click)="downloadPDF()" [disabled]="downloading()">
+        {{ downloading() ? '⏳ Downloading...' : '⬇ Download PDF' }}
+      </button>
+      <button class="print-btn" (click)="printQuotation()">🖨 Print</button>
+    </div>
   </header>
 
   <div class="tmpl-bar no-print">
     <p class="tmpl-bar-title">📐 Choose Template (A4 Portrait)</p>
     <div class="tmpl-tabs">
       @for (t of templates; track t.id) {
-        <button class="ttab" 
-                [class.active]="activeTemplate() === t.id" 
-                (click)="setTemplate(t.id)">
+        <button class="ttab" [class.active]="activeTemplate() === t.id" (click)="setTemplate(t.id)">
           <span class="ttab-icon">{{ t.icon }}</span>
           <span class="ttab-name">{{ t.name }}</span>
           <span class="ttab-desc">{{ t.desc }}</span>
@@ -185,30 +144,20 @@
         <div class="cl-hdr">
           <div class="cl-co-block">
             <div class="cl-co">{{ quotation()!.company_name }}</div>
-            @if (quotation()!.company_address) {
-              <div class="cl-co-sub">{{ quotation()!.company_address }}</div>
-            }
+            @if (quotation()!.company_address) { <div class="cl-co-sub">{{ quotation()!.company_address }}</div> }
             @if (quotation()!.company_email || quotation()!.company_phone) {
               <div class="cl-co-sub">
                 {{ quotation()!.company_email }}{{ quotation()!.company_email && quotation()!.company_phone ? ' · ' : '' }}{{ quotation()!.company_phone }}
               </div>
             }
-            @if (quotation()!.company_gst) {
-              <div class="cl-co-sub gst">GST/VAT: {{ quotation()!.company_gst }}</div>
-            }
+            @if (quotation()!.company_gst) { <div class="cl-co-sub gst">GST/VAT: {{ quotation()!.company_gst }}</div> }
           </div>
           <div class="cl-right">
             <h2>QUOTATION</h2>
-            @if (quotation()!.quotation_number) {
-              <p style="font-weight:700;color:#1e1b4b"># {{ quotation()!.quotation_number }}</p>
-            }
+            @if (quotation()!.quotation_number) { <p style="font-weight:700;color:#1e1b4b"># {{ quotation()!.quotation_number }}</p> }
             <p>Date: {{ quotation()!.quotation_date }}</p>
-            @if (quotation()!.valid_until) {
-              <p>Valid Until: {{ quotation()!.valid_until }}</p>
-            }
-            @if (quotation()!.payment_terms) {
-              <p>Terms: {{ quotation()!.payment_terms }}</p>
-            }
+            @if (quotation()!.valid_until) { <p>Valid Until: {{ quotation()!.valid_until }}</p> }
+            @if (quotation()!.payment_terms) { <p>Terms: {{ quotation()!.payment_terms }}</p> }
           </div>
         </div>
         <div class="cl-div"></div>
@@ -223,9 +172,7 @@
           <div class="cl-bill">
             <strong>Project</strong>
             <div class="cl-bill-name">{{ quotation()!.project_name }}</div>
-            @if (quotation()!.project_description) {
-              <div class="cl-proj-desc">{{ quotation()!.project_description }}</div>
-            }
+            @if (quotation()!.project_description) { <div class="cl-proj-desc">{{ quotation()!.project_description }}</div> }
           </div>
         </div>
         <table>
@@ -245,43 +192,19 @@
           </tbody>
         </table>
         <div class="cl-totals">
-          <div class="cl-tot-row">
-            <span>Subtotal</span>
-            <span>{{ quotation()!.currency }}{{ quotation()!.subtotal }}</span>
-          </div>
+          <div class="cl-tot-row"><span>Subtotal</span><span>{{ quotation()!.currency }}{{ quotation()!.subtotal }}</span></div>
           @if (quotation()!.discount_pct > 0) {
             <div class="cl-tot-row disc">
               <span>Discount ({{ quotation()!.discount_pct }}%)</span>
               <span>− {{ quotation()!.currency }}{{ quotation()!.discount_amount }}</span>
             </div>
           }
-          <div class="cl-tot-row">
-            <span>Tax ({{ quotation()!.tax_pct }}%)</span>
-            <span>{{ quotation()!.currency }}{{ quotation()!.tax_amount }}</span>
-          </div>
-          <div class="cl-tot-row big">
-            <span>TOTAL</span>
-            <span>{{ quotation()!.currency }}{{ quotation()!.total }}</span>
-          </div>
+          <div class="cl-tot-row"><span>Tax ({{ quotation()!.tax_pct }}%)</span><span>{{ quotation()!.currency }}{{ quotation()!.tax_amount }}</span></div>
+          <div class="cl-tot-row big"><span>TOTAL</span><span>{{ quotation()!.currency }}{{ quotation()!.total }}</span></div>
         </div>
-        @if (quotation()!.bank_details) {
-          <div class="cl-notes">
-            <span class="cl-notes-title">Payment Details</span>
-            {{ quotation()!.bank_details }}
-          </div>
-        }
-        @if (quotation()!.notes) {
-          <div class="cl-notes">
-            <span class="cl-notes-title">Notes</span>
-            {{ quotation()!.notes }}
-          </div>
-        }
-        @if (quotation()!.terms) {
-          <div class="cl-notes">
-            <span class="cl-notes-title">Terms & Conditions</span>
-            {{ quotation()!.terms }}
-          </div>
-        }
+        @if (quotation()!.bank_details) { <div class="cl-notes"><span class="cl-notes-title">Payment Details</span>{{ quotation()!.bank_details }}</div> }
+        @if (quotation()!.notes) { <div class="cl-notes"><span class="cl-notes-title">Notes</span>{{ quotation()!.notes }}</div> }
+        @if (quotation()!.terms) { <div class="cl-notes"><span class="cl-notes-title">Terms & Conditions</span>{{ quotation()!.terms }}</div> }
         <div class="sign-block">
           <div class="sign-line"></div>
           <div class="sign-name">Authorized Signatory</div>
@@ -303,9 +226,7 @@
           </div>
           <div class="co-hdr-right">
             <h2>QUOTATION</h2>
-            @if (quotation()!.quotation_number) {
-              <p style="font-weight:700;color:#3b82f6"># {{ quotation()!.quotation_number }}</p>
-            }
+            @if (quotation()!.quotation_number) { <p style="font-weight:700;color:#3b82f6"># {{ quotation()!.quotation_number }}</p> }
             <p>{{ quotation()!.quotation_date }}</p>
             @if (quotation()!.valid_until) { <p>Valid: {{ quotation()!.valid_until }}</p> }
           </div>
@@ -361,15 +282,9 @@
             <div class="co-t"><span>GST/Tax ({{ quotation()!.tax_pct }}%)</span><span>{{ quotation()!.currency }}{{ quotation()!.tax_amount }}</span></div>
             <div class="co-t co-tg"><span>GRAND TOTAL</span><span>{{ quotation()!.currency }}{{ quotation()!.total }}</span></div>
           </div>
-          @if (quotation()!.bank_details) {
-            <div class="co-notes"><strong>Payment Details</strong>{{ quotation()!.bank_details }}</div>
-          }
-          @if (quotation()!.notes) {
-            <div class="co-notes"><strong>Notes</strong>{{ quotation()!.notes }}</div>
-          }
-          @if (quotation()!.terms) {
-            <div class="co-notes"><strong>Terms & Conditions</strong>{{ quotation()!.terms }}</div>
-          }
+          @if (quotation()!.bank_details) { <div class="co-notes"><strong>Payment Details</strong>{{ quotation()!.bank_details }}</div> }
+          @if (quotation()!.notes) { <div class="co-notes"><strong>Notes</strong>{{ quotation()!.notes }}</div> }
+          @if (quotation()!.terms) { <div class="co-notes"><strong>Terms & Conditions</strong>{{ quotation()!.terms }}</div> }
           <div class="sign-block">
             <div class="sign-line"></div>
             <div class="sign-name">Authorized Signatory</div>
@@ -380,7 +295,7 @@
       </div>
       }
 
-      <!-- COMPACT TEMPLATE -->
+      <!-- COMPACT TEMPLATE - FIXED: Notes/Sign at bottom, no space -->
       @if (activeTemplate() === 'compact') {
       <div class="cm">
         <div class="cm-top">
@@ -450,13 +365,12 @@
         <div class="cm-bottom">
           <div class="cm-notes-block">
             @if (quotation()!.bank_details) { <div class="nb-title">Payment Details</div><div>{{ quotation()!.bank_details }}</div> }
-            @if (quotation()!.notes)        { <div class="nb-title">Notes</div><div>{{ quotation()!.notes }}</div> }
-            @if (quotation()!.terms)        { <div class="nb-title">Terms & Conditions</div><div>{{ quotation()!.terms }}</div> }
+            @if (quotation()!.notes) { <div class="nb-title">Notes</div><div>{{ quotation()!.notes }}</div> }
+            @if (quotation()!.terms) { <div class="nb-title">Terms & Conditions</div><div>{{ quotation()!.terms }}</div> }
           </div>
-          <div class="sign-block">
-            <div class="sign-line"></div>
-            <div class="sign-name">Authorized Signatory</div>
-            <div class="sign-company">{{ quotation()!.company_name }}</div>
+          <div class="cm-sign">
+            <div class="cm-sign-name">Authorized Signatory</div>
+            <div class="cm-sign-company">{{ quotation()!.company_name }}</div>
           </div>
         </div>
         @if (quotation()!.valid_until) {
@@ -465,7 +379,7 @@
       </div>
       }
 
-      <!-- ELEGANT TEMPLATE -->
+      <!-- ELEGANT TEMPLATE - FIXED: Terms & Sign same line, Notes pulled down -->
       @if (activeTemplate() === 'elegant') {
       <div class="el">
         <div class="el-top">
@@ -542,26 +456,30 @@
             <div class="el-t"><span>Tax ({{ quotation()!.tax_pct }}%)</span><span>{{ quotation()!.currency }}{{ quotation()!.tax_amount }}</span></div>
             <div class="el-t el-tg"><span>TOTAL</span><span>{{ quotation()!.currency }}{{ quotation()!.total }}</span></div>
           </div>
+          <!-- Payment Details & Notes pulled DOWN -->
           @if (quotation()!.bank_details) {
             <div class="el-notes"><span class="nb-title">Payment Details</span>{{ quotation()!.bank_details }}</div>
           }
           @if (quotation()!.notes) {
             <div class="el-notes"><span class="nb-title">Notes</span>"{{ quotation()!.notes }}"</div>
           }
-          @if (quotation()!.terms) {
-            <div class="el-notes"><span class="nb-title">Terms & Conditions</span>{{ quotation()!.terms }}</div>
-          }
-          <div class="sign-block">
-            <div class="sign-line" style="background:#c9a84c"></div>
-            <div class="sign-name">Authorized Signatory</div>
-            <div class="sign-company">{{ quotation()!.company_name }}</div>
+          <!-- Terms & Sign on SAME LINE -->
+          <div class="el-bottom-row">
+            <div class="el-terms-left">
+              @if (quotation()!.terms) {
+                <span class="nb-title-inline">Terms & Conditions:</span>
+                <span class="terms-text-inline">{{ quotation()!.terms }}</span>
+              }
+            </div>
+            <div class="el-sign-right">
+              <div class="el-sign-name">Authorized Signatory</div>
+              <div class="el-sign-company">{{ quotation()!.company_name }}</div>
+            </div>
           </div>
         </div>
         <div class="el-footer">
           <div class="el-footer-brand">{{ quotation()!.company_name }}</div>
-          @if (quotation()!.valid_until) {
-            <div class="el-valid">Valid until {{ quotation()!.valid_until }}</div>
-          }
+          @if (quotation()!.valid_until) { <div class="el-valid">Valid until {{ quotation()!.valid_until }}</div> }
         </div>
       </div>
       }
