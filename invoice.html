@@ -1,0 +1,551 @@
+<!-- ====================== FORM PAGE ====================== -->
+<div *ngIf="showForm" class="page">
+  <header class="topbar">
+    <button class="back-btn" (click)="goToDashboard()">← Dashboard</button>
+    <h1>💰 Create Invoice</h1>
+    <span></span>
+  </header>
+
+  <div class="form-wrap">
+    <div class="grid2">
+      <div class="card">
+        <h2>🏢 Your Company</h2>
+        <div class="field">
+          <label>Company Logo *</label>
+          <input type="file" accept="image/*" (change)="onLogoUpload($event)" />
+          <small class="hint">Recommended: 5cm × 2cm</small>
+        </div>
+        <div class="field"><label>Company Name *</label><input type="text" [(ngModel)]="form.company_name" /></div>
+        <div class="field"><label>Company Address</label><textarea [(ngModel)]="form.company_address" rows="3"></textarea></div>
+        <div class="row2">
+          <div class="field"><label>Email</label><input type="email" [(ngModel)]="form.company_email" /></div>
+          <div class="field"><label>Phone</label><input type="tel" [(ngModel)]="form.phone" /></div>
+        </div>
+        <div class="field"><label>GSTIN</label><input type="text" [(ngModel)]="form.company_gst" /></div>
+        <div class="field">
+          <label>Customer Name (for signature)</label>
+          <input type="text" [(ngModel)]="form.customer_name" placeholder="e.g. John Doe" />
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>👤 Bill To</h2>
+        <div class="field"><label>Client Name *</label><input type="text" [(ngModel)]="form.client_name" /></div>
+        <div class="field"><label>Client Address</label><textarea [(ngModel)]="form.client_address" rows="3"></textarea></div>
+        <div class="field"><label>Client GSTIN</label><input type="text" [(ngModel)]="form.client_gst" /></div>
+      </div>
+
+      <div class="card">
+        <h2>🚚 Deliver To (Shipping)</h2>
+        <div class="field"><label>Recipient Name</label><input type="text" [(ngModel)]="form.ship_to_name" /></div>
+        <div class="field"><label>Shipping Address</label><textarea [(ngModel)]="form.ship_to_address" rows="3"></textarea></div>
+        <div class="field"><label>Recipient GSTIN</label><input type="text" [(ngModel)]="form.ship_to_gst" /></div>
+      </div>
+
+      <div class="card">
+        <h2>🔢 Invoice Details</h2>
+        <div class="row2">
+          <div class="field"><label>Invoice Number</label><input type="text" [(ngModel)]="form.invoice_number" placeholder="Auto-generated" /></div>
+          <div class="field"><label>Invoice Date</label><input type="date" [(ngModel)]="form.invoice_date" /></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>PO Number</label><input type="text" [(ngModel)]="form.po_number" /></div>
+          <div class="field"><label>PO Date</label><input type="date" [(ngModel)]="form.po_date" /></div>
+        </div>
+        <div class="field"><label>Due Date</label><input type="date" [(ngModel)]="form.due_date" /></div>
+        <div class="field"><label>Payment Terms</label><input type="text" [(ngModel)]="form.payment_terms" placeholder="e.g. Net 30" /></div>
+        <div class="row2">
+          <div class="field"><label>Currency</label>
+            <select [(ngModel)]="form.currency">
+              <option value="₹">₹ INR</option>
+              <option value="$">$ USD</option>
+              <option value="€">€ EUR</option>
+            </select>
+          </div>
+          <div class="field"><label>Tax %</label><input type="number" [(ngModel)]="form.tax_pct" /></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🏦 Bank Details</h2>
+        <div class="field"><label>Account Name</label><input type="text" [(ngModel)]="form.company_name" /></div>
+        <div class="row2">
+          <div class="field"><label>A/C Number</label><input type="text" [(ngModel)]="form.account_number" /></div>
+          <div class="field"><label>IFSC</label><input type="text" [(ngModel)]="form.ifsc_code" /></div>
+        </div>
+        <div class="field"><label>Bank Name</label><input type="text" [(ngModel)]="form.bank_name" /></div>
+      </div>
+
+      <div class="card">
+        <h2>📝 Notes *</h2>
+        <div class="field">
+          <label>Notes / Remarks *</label>
+          <textarea [(ngModel)]="form.notes" rows="4" placeholder="Notes shown on all invoices..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card items-card">
+      <div class="items-header">
+        <h2>📦 Line Items</h2>
+        <button type="button" class="add-item-btn" (click)="addItem()">+ Add Item</button>
+      </div>
+      <div class="items-list">
+        <div class="item-row-head">
+          <div>Description</div><div>HSN</div><div>Qty</div><div>UOM</div><div>Unit Price</div><div>Amount</div><div></div>
+        </div>
+        <div *ngFor="let item of items; let i = index" class="item-row">
+          <input type="text" [(ngModel)]="item.description" placeholder="Item name" />
+          <input type="text" [(ngModel)]="item.hsn_code" placeholder="HSN" />
+          <input type="number" [(ngModel)]="item.quantity" (ngModelChange)="updateItemAmount(i)" min="0" />
+          <input type="text" [(ngModel)]="item.uom" placeholder="EA" />
+          <input type="number" [(ngModel)]="item.unit_price" (ngModelChange)="updateItemAmount(i)" min="0" step="0.01" />
+          <div class="amount-display">{{ form.currency }}{{ format(item.amount) }}</div>
+          <button type="button" class="remove-item-btn" (click)="removeItem(i)" [disabled]="items.length === 1">✕</button>
+        </div>
+      </div>
+      <div class="items-summary">
+        <span>Subtotal:</span> <strong>{{ form.currency }}{{ format(subtotal) }}</strong>
+      </div>
+    </div>
+
+    <button class="gen-btn" (click)="generate()">✨ Generate Invoice</button>
+  </div>
+</div>
+
+<!-- ====================== PREVIEW PAGE ====================== -->
+<div *ngIf="showPreview" class="page">
+  <header class="topbar no-print">
+    <button class="back-btn" (click)="goBack()">← Edit</button>
+    <h1>Invoice Preview</h1>
+    <div class="header-actions">
+      <button class="download-btn" (click)="downloadPDF()">📥 Download PDF</button>
+      <button class="print-btn" (click)="print()">🖨 Print</button>
+    </div>
+  </header>
+
+  <div class="tmpl-bar no-print">
+    <p>Choose Template:</p>
+    <div class="tmpl-tabs">
+      <button *ngFor="let t of templates" class="ttab"
+              [class.active]="activeTemplate === t.id"
+              (click)="setTemplate(t.id)">
+        <span class="tl">{{ t.name }}</span>
+        <span class="td">{{ t.desc }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="a4wrap">
+    <div class="a4" id="invoice-paper">
+
+      <!-- ==============================
+           CLASSIC
+           ============================== -->
+      <div *ngIf="activeTemplate === 'classic'" class="cl">
+        <div class="cl-hdr">
+          <div class="cl-logo-vertical">
+            <div class="cl-logo">
+              <img *ngIf="form.company_logo" [src]="form.company_logo" alt="Logo" />
+              <div *ngIf="!form.company_logo" class="cl-logo-placeholder">{{ form.company_name.charAt(0) }}</div>
+            </div>
+            <div class="cl-logo-name">{{ form.company_name }}</div>
+          </div>
+          <div class="cl-info-block">
+            <div class="cl-info-name">{{ form.company_name }}</div>
+            <div class="cl-info-line">{{ form.company_address }}</div>
+            <div class="cl-info-line"><strong>GSTIN:</strong> {{ form.company_gst }}</div>
+            <div class="cl-info-line"><strong>Email:</strong> {{ form.company_email }}</div>
+            <div class="cl-info-line"><strong>Phone:</strong> {{ form.phone }}</div>
+          </div>
+          <div class="cl-title-block">
+            <h1>COMMERCIAL<br>INVOICE</h1>
+            <span class="cl-original">ORIGINAL COPY</span>
+          </div>
+        </div>
+
+        <div class="cl-meta-row">
+          <!-- ✅ BIG INVOICE NUMBER below "INVOICE NO." label -->
+          <div class="cl-meta-cell">
+            <span class="cl-lbl">INVOICE NO.</span>
+            <strong class="cl-invoice-num-big">{{ invoiceNumber }}</strong>
+          </div>
+          <div class="cl-meta-cell"><span class="cl-lbl">INVOICE DATE</span><strong>{{ form.invoice_date | date:'d MMM y' }}</strong></div>
+          <div class="cl-meta-cell"><span class="cl-lbl">PO NUMBER</span><strong>{{ form.po_number }}</strong></div>
+          <div class="cl-meta-cell"><span class="cl-lbl">PO DATE</span><strong>{{ form.po_date | date:'d MMM y' }}</strong></div>
+          <div class="cl-meta-cell"><span class="cl-lbl">PAYMENT TERMS</span><strong>{{ form.payment_terms }}</strong></div>
+        </div>
+
+        <div class="cl-bill-row">
+          <div class="cl-bill">
+            <span class="cl-lbl">BILL TO</span>
+            <div class="cl-bill-name">{{ form.client_name }}</div>
+            <div class="cl-bill-line">{{ form.client_address }}</div>
+            <div *ngIf="form.client_gst" class="cl-gstin">GSTIN: {{ form.client_gst }}</div>
+          </div>
+          <!-- ✅ GSTIN ADDED TO DELIVER TO -->
+          <div class="cl-bill">
+            <span class="cl-lbl">DELIVER TO</span>
+            <div class="cl-bill-name">{{ form.ship_to_name }}</div>
+            <div class="cl-bill-line">{{ form.ship_to_address }}</div>
+            <div *ngIf="form.ship_to_gst" class="cl-gstin">GSTIN: {{ form.ship_to_gst }}</div>
+          </div>
+        </div>
+
+        <div class="cl-items-section">
+          <span class="cl-lbl">LINE ITEMS</span>
+          <table class="cl-items-table">
+            <thead>
+              <tr>
+                <th>S.NO</th><th>HSN CODE</th>
+                <th class="left">DESCRIPTION OF GOODS</th>
+                <th>QTY</th><th>UOM</th>
+                <th class="right">RATE ({{ form.currency }})</th>
+                <th class="right">TOTAL ({{ form.currency }})</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ item.hsn_code }}</td>
+                <td class="left"><strong>{{ item.description }}</strong></td>
+                <td>{{ format(item.quantity) }}</td>
+                <td><span class="cl-uom">{{ item.uom }}</span></td>
+                <td class="right">{{ format(item.unit_price) }}</td>
+                <td class="right">{{ format(item.amount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="cl-bottom">
+          <div class="cl-bottom-left">
+            <span class="cl-lbl">AMOUNT IN WORDS</span>
+            <div class="cl-amount-words">{{ numberToWords(total) }}</div>
+            <span class="cl-lbl" style="margin-top:14px">BANK DETAILS</span>
+            <div class="cl-bank">
+              <div><span>Name</span><strong>{{ form.company_name }}</strong></div>
+              <div><span>A/C No.</span><strong>{{ form.account_number }}</strong></div>
+              <div><span>Bank</span><strong>{{ form.bank_name }}</strong></div>
+              <div><span>IFSC</span><strong>{{ form.ifsc_code }}</strong></div>
+            </div>
+          </div>
+          <div class="cl-totals-box">
+            <div class="cl-tot-row"><span>Subtotal</span><span>{{ form.currency }} {{ format(subtotal) }}</span></div>
+            <div class="cl-tot-row"><span>IGST &#64; {{ form.tax_pct }}%</span><span>{{ form.currency }} {{ format(taxAmount) }}</span></div>
+            <div class="cl-tot-row big"><span>Total Amount</span><span>{{ form.currency }} {{ format(total) }}</span></div>
+            <div class="cl-notes-section">
+              <div class="cl-notes-title">NOTES:</div>
+              <div class="cl-notes-text">{{ form.notes }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cl-signatures">
+          <div class="cl-sig-block">
+            <div class="cl-sig-line"></div>
+            <div class="cl-sig-name">{{ form.customer_name }}</div>
+            <div class="cl-sig-label">CUSTOMER SIGNATURE</div>
+          </div>
+          <div class="cl-sig-block right">
+            <div class="cl-sig-name">For {{ form.company_name }}</div>
+            <div class="cl-sig-line"></div>
+            <div class="cl-sig-label">AUTHORISED SIGNATORY</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================
+           CORPORATE
+           ============================== -->
+      <div *ngIf="activeTemplate === 'corporate'" class="co">
+        <div class="co-top">
+          <div class="co-co-block">
+            <div class="co-logo-vertical">
+              <div class="co-logo">
+                <img *ngIf="form.company_logo" [src]="form.company_logo" alt="Logo" />
+                <div *ngIf="!form.company_logo" class="co-logo-placeholder">{{ form.company_name.charAt(0) }}</div>
+              </div>
+              <div class="co-logo-name">{{ form.company_name }}</div>
+            </div>
+            <div class="co-co-info">{{ form.company_address }}</div>
+            <div class="co-co-info"><strong>GSTIN:</strong> {{ form.company_gst }}</div>
+            <div class="co-co-info"><strong>Email:</strong> {{ form.company_email }}</div>
+            <div class="co-co-info"><strong>Phone:</strong> {{ form.phone }}</div>
+          </div>
+          <div class="co-inv-block">
+            <h1>INVOICE</h1>
+            <div class="co-inv-num"># {{ invoiceNumber }}</div>
+          </div>
+        </div>
+        <div class="co-stripe"></div>
+        <div class="co-body">
+          <div class="co-meta">
+            <div><span>Date</span><strong>{{ form.invoice_date | date:'d MMM y' }}</strong></div>
+            <div><span>PO</span><strong>{{ form.po_number }}</strong></div>
+            <div><span>Due</span><strong>{{ form.due_date | date:'d MMM y' }}</strong></div>
+          </div>
+          <div class="co-bill-row">
+            <div>
+              <span class="co-lbl">BILL TO</span>
+              <div class="co-bill-name">{{ form.client_name }}</div>
+              <div class="co-bill-line">{{ form.client_address }}</div>
+              <div class="co-gstin">GSTIN: {{ form.client_gst }}</div>
+            </div>
+            <!-- ✅ GSTIN ADDED TO DELIVER TO -->
+            <div>
+              <span class="co-lbl">DELIVER TO</span>
+              <div class="co-bill-name">{{ form.ship_to_name }}</div>
+              <div class="co-bill-line">{{ form.ship_to_address }}</div>
+              <div class="co-gstin">GSTIN: {{ form.ship_to_gst }}</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Description</th><th>HSN</th><th>Qty</th><th>UOM</th><th>Rate</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td><strong>{{ item.description }}</strong></td>
+                <td>{{ item.hsn_code }}</td>
+                <td>{{ format(item.quantity) }}</td>
+                <td>{{ item.uom }}</td>
+                <td>{{ form.currency }} {{ format(item.unit_price) }}</td>
+                <td>{{ form.currency }} {{ format(item.amount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="co-bottom">
+            <div>
+              <div class="co-amount-words"><strong>Amount in Words:</strong><br>{{ numberToWords(total) }}</div>
+              <div class="co-bank">
+                <strong>Bank Details</strong>
+                <div>{{ form.company_name }}</div>
+                <div>A/C: {{ form.account_number }}</div>
+                <div>{{ form.bank_name }} | {{ form.ifsc_code }}</div>
+              </div>
+            </div>
+            <div class="co-totals">
+              <div class="co-tot"><span>Subtotal</span><span>{{ form.currency }} {{ format(subtotal) }}</span></div>
+              <div class="co-tot"><span>IGST &#64; {{ form.tax_pct }}%</span><span>{{ form.currency }} {{ format(taxAmount) }}</span></div>
+              <div class="co-tot big"><span>Total</span><span>{{ form.currency }} {{ format(total) }}</span></div>
+              <div class="co-notes-section">
+                <div class="co-notes-title">NOTES:</div>
+                <div class="co-notes-text">{{ form.notes }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="co-sigs">
+            <div class="co-sig-block">
+              <div class="co-sig-line"></div>
+              <div class="co-sig-name">{{ form.customer_name }}</div>
+              <div class="co-sig-label">CUSTOMER SIGNATURE</div>
+            </div>
+            <div class="co-sig-block right">
+              <div class="co-sig-name">For {{ form.company_name }}</div>
+              <div class="co-sig-line"></div>
+              <div class="co-sig-label">AUTHORISED SIGNATORY</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================
+           COMPACT
+           ============================== -->
+      <div *ngIf="activeTemplate === 'compact'" class="cm">
+        <div class="cm-hdr">
+          <div class="cm-logo-vertical">
+            <div class="cm-logo">
+              <img *ngIf="form.company_logo" [src]="form.company_logo" alt="Logo" />
+              <div *ngIf="!form.company_logo" class="cm-logo-placeholder">{{ form.company_name.charAt(0) }}</div>
+            </div>
+            <div class="cm-logo-info-block">
+              <div class="cm-logo-name">{{ form.company_name }}</div>
+              <div class="cm-logo-addr">{{ form.company_address }}</div>
+              <div class="cm-logo-info"><strong>GST NO:</strong> <span>{{ form.company_gst }}</span></div>
+              <div class="cm-logo-info cm-no-wrap"><strong>Email:</strong> <span>{{ form.company_email }}</span></div>
+              <div class="cm-logo-info cm-no-wrap"><strong>Phone:</strong> <span>{{ form.phone }}</span></div>
+            </div>
+          </div>
+          <div class="cm-right">
+            <div class="cm-lbl">INVOICE</div>
+            <div class="cm-num">{{ invoiceNumber }}</div>
+            <div class="cm-date">{{ form.invoice_date | date:'d MMM y' }}</div>
+          </div>
+        </div>
+
+        <div class="cm-deliver-block">
+          <span class="cm-deliver-label">DELIVER TO:</span>
+          <strong>{{ form.ship_to_name }}</strong>
+          <div class="cm-deliver-addr">{{ form.ship_to_address }}</div>
+          <!-- ✅ GSTIN ADDED TO DELIVER TO -->
+          <div *ngIf="form.ship_to_gst" class="cm-deliver-gstin">GSTIN: {{ form.ship_to_gst }}</div>
+        </div>
+
+        <div class="cm-info-row">
+          <div class="cm-cell">
+            <div class="lbl">Bill To</div>
+            <div class="val">{{ form.client_name }}</div>
+            <div class="sub">{{ form.client_address }}</div>
+            <div class="sub">GSTIN: {{ form.client_gst }}</div>
+          </div>
+          <div class="cm-cell">
+            <div class="lbl">PO / Terms</div>
+            <div class="val">{{ form.po_number || '—' }}</div>
+            <div class="sub">{{ form.payment_terms }}</div>
+          </div>
+          <div class="cm-cell">
+            <div class="lbl">Total</div>
+            <div class="val big" style="color:#1e1b4b">{{ form.currency }} {{ format(total) }}</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>#</th><th>Item</th><th>HSN</th><th>Qty</th><th>UOM</th><th>Rate</th><th>Amount</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of items; let i = index">
+              <td>{{ i + 1 }}</td><td><strong>{{ item.description }}</strong></td>
+              <td>{{ item.hsn_code }}</td><td>{{ format(item.quantity) }}</td>
+              <td>{{ item.uom }}</td>
+              <td>{{ form.currency }} {{ format(item.unit_price) }}</td>
+              <td>{{ form.currency }} {{ format(item.amount) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="cm-bottom">
+          <div class="cm-left">
+            <div class="cm-words"><strong>Amount in Words:</strong> {{ numberToWords(total) }}</div>
+            <div class="cm-bank">
+              <strong>Bank:</strong> {{ form.bank_name }}<br>
+              <strong>A/C:</strong> {{ form.account_number }}<br>
+              <strong>IFSC:</strong> {{ form.ifsc_code }}
+            </div>
+            <div class="cm-notes-section">
+              <div class="cm-notes-title">NOTES:</div>
+              <div class="cm-notes-text">{{ form.notes }}</div>
+            </div>
+          </div>
+          <div class="cm-totals">
+            <div class="cm-tot"><span>Subtotal</span><span>{{ form.currency }} {{ format(subtotal) }}</span></div>
+            <div class="cm-tot"><span>IGST &#64; {{ form.tax_pct }}%</span><span>{{ form.currency }} {{ format(taxAmount) }}</span></div>
+            <div class="cm-tot big"><span>Total</span><span>{{ form.currency }} {{ format(total) }}</span></div>
+          </div>
+        </div>
+
+        <div class="cm-sigs">
+          <div class="cm-sig-block">
+            <div class="cm-sig-line"></div>
+            <div class="cm-sig-name">{{ form.customer_name }}</div>
+            <div class="cm-sig-label">CUSTOMER SIGNATURE</div>
+          </div>
+          <div class="cm-sig-block right">
+            <div class="cm-sig-name">For {{ form.company_name }}</div>
+            <div class="cm-sig-line"></div>
+            <div class="cm-sig-label">AUTHORISED SIGNATORY</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================
+           ELEGANT
+           ============================== -->
+      <div *ngIf="activeTemplate === 'elegant'" class="el">
+        <div class="el-top">
+          <div class="el-logo-info-block">
+            <div class="el-logo-row">
+              <div class="el-logo">
+                <img *ngIf="form.company_logo" [src]="form.company_logo" alt="Logo" />
+                <div *ngIf="!form.company_logo" class="el-logo-placeholder">{{ form.company_name.charAt(0) }}</div>
+              </div>
+              <div class="el-company-info">
+                <div class="el-logo-name">{{ form.company_name }}</div>
+                <div class="el-info-line">{{ form.company_address }}</div>
+                <div class="el-info-line"><strong>GSTIN:</strong> {{ form.company_gst }}</div>
+                <div class="el-info-line"><strong>Email:</strong> {{ form.company_email }}</div>
+                <div class="el-info-line"><strong>Phone:</strong> {{ form.phone }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="el-invoice-corner">
+            <div class="el-invoice-label">INVOICE</div>
+            <div class="el-invoice-num"># {{ invoiceNumber }}</div>
+            <div class="el-invoice-date">{{ form.invoice_date | date:'d MMM y' }}</div>
+          </div>
+        </div>
+        <div class="el-body">
+          <div class="el-cards">
+            <div>
+              <div class="el-card-lbl">Bill To</div>
+              <div class="el-card-val">{{ form.client_name }}</div>
+              <div class="el-card-sub">{{ form.client_address }}</div>
+              <div class="el-card-sub">GSTIN: {{ form.client_gst }}</div>
+            </div>
+            <!-- ✅ GSTIN ADDED TO DELIVER TO -->
+            <div>
+              <div class="el-card-lbl">Deliver To</div>
+              <div class="el-card-val">{{ form.ship_to_name }}</div>
+              <div class="el-card-sub">{{ form.ship_to_address }}</div>
+              <div class="el-card-sub">GSTIN: {{ form.ship_to_gst }}</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Description</th><th>HSN</th><th>Qty</th><th>UOM</th><th>Rate</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td><strong>{{ item.description }}</strong></td>
+                <td>{{ item.hsn_code }}</td>
+                <td>{{ format(item.quantity) }}</td>
+                <td>{{ item.uom }}</td>
+                <td>{{ form.currency }} {{ format(item.unit_price) }}</td>
+                <td>{{ form.currency }} {{ format(item.amount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="el-bottom">
+            <div>
+              <div class="el-words"><strong>Amount in Words:</strong><br>{{ numberToWords(total) }}</div>
+              <div class="el-bank">
+                <strong>Bank Details</strong><br>
+                {{ form.company_name }}<br>
+                A/C: {{ form.account_number }}<br>
+                {{ form.bank_name }} · {{ form.ifsc_code }}
+              </div>
+            </div>
+            <div class="el-totals">
+              <div class="el-tot"><span>Subtotal</span><span>{{ form.currency }} {{ format(subtotal) }}</span></div>
+              <div class="el-tot"><span>IGST &#64; {{ form.tax_pct }}%</span><span>{{ form.currency }} {{ format(taxAmount) }}</span></div>
+              <div class="el-tot big"><span>Total</span><span>{{ form.currency }} {{ format(total) }}</span></div>
+              <div class="el-notes-section">
+                <div class="el-notes-title">NOTES:</div>
+                <div class="el-notes-text">{{ form.notes }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-sigs">
+            <div class="el-sig-block">
+              <div class="el-sig-line"></div>
+              <div class="el-sig-name">{{ form.customer_name }}</div>
+              <div class="el-sig-label">CUSTOMER SIGNATURE</div>
+            </div>
+            <div class="el-sig-block right">
+              <div class="el-sig-name">For {{ form.company_name }}</div>
+              <div class="el-sig-line"></div>
+              <div class="el-sig-label">AUTHORISED SIGNATORY</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
